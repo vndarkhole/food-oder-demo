@@ -1,0 +1,41 @@
+version: '3'
+ 
+services:
+  db:
+    image: mysql:latest
+    container_name: db_appBanHang
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: 321
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./db_data:/var/lib/mysql:rw
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - db
+    environment:
+      PMA_HOST: db_appBanHang
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
+
+  php-apache-environment:
+      container_name: php-apache
+      build:
+          context: ./php
+          dockerfile: Dockerfile
+      depends_on:
+          - db
+      volumes:
+          - ./php/src:/var/www/html/
+      ports:
+          - 8000:80
